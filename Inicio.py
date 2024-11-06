@@ -204,6 +204,8 @@ elif st.session_state.page == 3:
     # Continuar con el uso de df en esta página
     else:
         st.warning("Por favor, ingresa o carga los datos en la página 2.")
+    if "df_selection" in st.session_state:
+        df_selection = st.session_state.df_selection
 #----------------------------------------------------------------------------------------------
     st.markdown("""
 
@@ -317,33 +319,50 @@ elif st.session_state.page == 3:
     st.markdown("### Línea meteorica local")
     col1,col2,col3,col4 = st.columns([0.25,.25,.25,.25])
     with col1:
-        Filtro = st.selectbox(
-            "Seleccione la categoria para filtrar",
-            options=["Tipo","Nombre","Fecha"],
-            # default="Nombre"
-            )
+        Filtro = st.selectbox("Seleccione la categoria para filtrar",options=["Tipo","Nombre","Fecha"])
     with col2:
-            # Crear un widget multiselect para que el usuario seleccione los puntos de interés
-        selected_points1 = st.multiselect(
-            "Seleccione puntos para el grupo 1",
-            options=df[Filtro].unique(),
-            format_func=lambda x: f"{x}",
-        )
+        if df_selection == "SIAMS-UNAL" and Filtro=="Tipo":
+            selected_points1 = st.multiselect(
+                "Seleccione puntos para el grupo 1",
+                options=df[Filtro].unique(),
+                default=["Lluvia"],
+                format_func=lambda x: f"{x}",
+            )
+        else:
+            selected_points1 = st.multiselect(
+                "Seleccione puntos para el grupo 1",
+                options=df[Filtro].unique(),
+                format_func=lambda x: f"{x}",
+            )
 
     with col3:
-            # Crear un widget multiselect para que el usuario seleccione los puntos de interés
-        selected_points2 = st.multiselect(
-            "Seleccione puntos para el grupo 2",
-            options=df[Filtro].unique(),
-            format_func=lambda x: f"{x}",
-        )
+        if df_selection == "SIAMS-UNAL" and Filtro=="Tipo":
+            selected_points2 = st.multiselect(
+                "Seleccione puntos para el grupo 1",
+                options=df[Filtro].unique(),
+                default=["Laguna"],
+                format_func=lambda x: f"{x}",
+            )
+        else:
+            selected_points2 = st.multiselect(
+                "Seleccione puntos para el grupo 1",
+                options=df[Filtro].unique(),
+                format_func=lambda x: f"{x}",
+            )
     with col4:
-            # Crear un widget multiselect para que el usuario seleccione los puntos de interés
-        selected_points3 = st.multiselect(
-            "Seleccione puntos para el grupo 3",
-            options=df[Filtro].unique(),
-            format_func=lambda x: f"{x}",
-        )# Filtrar el DataFrame según los puntos seleccionados
+        if df_selection == "SIAMS-UNAL" and Filtro=="Tipo":
+            selected_points3 = st.multiselect(
+                "Seleccione puntos para el grupo 1",
+                options=df[Filtro].unique(),
+                default=["Humedal "],
+                format_func=lambda x: f"{x}",
+            )
+        else:
+            selected_points3 = st.multiselect(
+                "Seleccione puntos para el grupo 1",
+                options=df[Filtro].unique(),
+                format_func=lambda x: f"{x}",
+            )
 
     if selected_points1:
         df_selected1 = df[df[Filtro].isin(selected_points1)].copy()
@@ -590,7 +609,48 @@ elif st.session_state.page == 6:
     # IO18 = -0.00261*
     fig = px.scatter(df, x="Elevacion", y="18O", color="Tipo",hover_name="Nombre",text="Nombre")
     fig.update_traces(textposition='top center', textfont=dict(size=11))
-    fig.add_trace(go.Scatter(y=O18,x=deltaElev,mode='lines',name="Linea meteorica de la recarga superficial"))
+    fig.add_trace(go.Scatter(y=O18,x=deltaElev,mode='lines',name="Linea meteorica de la recarga superficial",line=dict(color='black',dash="dash")))
+    # Agregar líneas horizontales desde cada punto a la línea de regresión
+    for i, row in df.iterrows():
+        if row["Tipo"] == "Infiltracion":
+            elevacion = row["Elevacion"]
+            O18_valor = row["18O"]
+            # Calculamos la intersección con la línea de regresión
+            n_elevacion = (O18_valor - intercept1)/slope1
+            
+            # Línea horizontal desde el punto hasta la intersección con la línea de regresión
+            fig.add_trace(go.Scatter(
+                x=[elevacion, n_elevacion],
+                y=[O18_valor, O18_valor],
+                mode='lines',
+                line=dict(dash="dot", color="#0068c9"),
+                showlegend=False
+            ))
+            
+            # Línea vertical desde la intersección con la línea de regresión hasta el eje x
+            fig.add_trace(go.Scatter(
+                x=[n_elevacion, n_elevacion],
+                y=[O18_valor, min(df["18O"]) - 0.1],
+                mode='lines',
+                line=dict(dash="dot", color="#0068c9",),
+                showlegend=False
+            ))
+
+            fig.add_annotation(
+                x=n_elevacion,
+                y=np.min(df["18O"]-0.1),
+                ax=n_elevacion,  # Ajusta para el ángulo de la flecha
+                ay=np.min(df["18O"]),
+                xref="x",
+                yref="y",
+                axref="x",
+                ayref="y",
+                showarrow=True,
+                arrowhead=2,
+                arrowsize=2,
+                arrowwidth=1,
+                arrowcolor="#0068c9"
+            )
     fig.update_traces(textposition='top center', textfont=dict(size=11))
     fig.update_layout(
     yaxis_title='δ¹⁸O (‰)',
@@ -630,7 +690,48 @@ elif st.session_state.page == 6:
     # IO18 = -0.00261*
     fig = px.scatter(df, x="Elevacion", y="18O", color="Tipo",hover_name="Nombre",text="Nombre")
     fig.update_traces(textposition='top center', textfont=dict(size=11))
-    fig.add_trace(go.Scatter(y=O18,x=deltaElev,mode='lines',name="Linea meteorica de la recarga superficial"))
+    fig.add_trace(go.Scatter(y=O18,x=deltaElev,mode='lines',name="Linea meteorica de la recarga superficial",line=dict(color='black',dash="dash")))
+    # Agregar líneas horizontales desde cada punto a la línea de regresión
+    for i, row in df.iterrows():
+        if row["Tipo"] == "Infiltracion":
+            elevacion = row["Elevacion"]
+            O18_valor = row["18O"]
+            # Calculamos la intersección con la línea de regresión
+            n_elevacion = (O18_valor - intercept1)/slope1
+            
+            # Línea horizontal desde el punto hasta la intersección con la línea de regresión
+            fig.add_trace(go.Scatter(
+                x=[elevacion, n_elevacion],
+                y=[O18_valor, O18_valor],
+                mode='lines',
+                line=dict(dash="dot", color="#0068c9"),
+                showlegend=False
+            ))
+            
+            # Línea vertical desde la intersección con la línea de regresión hasta el eje x
+            fig.add_trace(go.Scatter(
+                x=[n_elevacion, n_elevacion],
+                y=[O18_valor, min(df["18O"]) - 0.1],
+                mode='lines',
+                line=dict(dash="dot", color="#0068c9",),
+                showlegend=False
+            ))
+
+            fig.add_annotation(
+                x=n_elevacion,
+                y=np.min(df["18O"]-0.1),
+                ax=n_elevacion,  # Ajusta para el ángulo de la flecha
+                ay=np.min(df["18O"]),
+                xref="x",
+                yref="y",
+                axref="x",
+                ayref="y",
+                showarrow=True,
+                arrowhead=2,
+                arrowsize=2,
+                arrowwidth=1,
+                arrowcolor="#0068c9"
+            )
     fig.update_traces(textposition='top center', textfont=dict(size=11))
     fig.update_layout(
     yaxis_title='δ¹⁸O (‰)',
