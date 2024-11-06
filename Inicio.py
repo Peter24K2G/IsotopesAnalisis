@@ -602,6 +602,44 @@ elif st.session_state.page == 6:
     st.divider()
     st.markdown("### Visualización del análisis")
     st.image("images/Elevacion.jpg")
+    st.divider()
+    st.markdown("## Datos propios ")
+            #Ingreso de datos de forma manual
+    df = pd.DataFrame(
+        {
+            "Nombre": ["Punto1"],
+            "18O": [2.1],
+            "2H": [-8.5],
+            "Elevacion":[1800],
+            "Tipo":["Superficial"]
+        }
+    )
+    writed_df = st.data_editor(df,num_rows="dynamic")
+    col1,col2 = st.columns([0.7,0.3])
+    with col1:
+        df = writed_df[["Nombre","18O","2H","Elevacion","Tipo"]]
+        styled_df = df.style.applymap(highlight_cells, subset=['Tipo']) 
+        st.dataframe(styled_df)
+    with col2:
+        slope1, intercept1, r_value, p_value, std_err = linregress(df.loc[df["Tipo"]=="Superficial"]["Elevacion"], df.loc[df["Tipo"]=="Superficial"]["18O"])
+        st.write(f"La ecuación de la cantidad isotópica de $\delta$18O vs la altura de recarga en superficie:")
+        st.write(f"$\delta$18O = {intercept1:.2f} + Elev*{slope1:0.4f}")
+    Emin,Emax = [1600,1900]#np.min(df.loc[df["Tipo"]=="Superficial"]["Elevacion"]),np.max(df.loc[df["Tipo"]=="Superficial"]["Elevacion"])]
+    deltaElev= np.linspace(Emin, Emax, num=50)
+    O18 = intercept1 + deltaElev*slope1
+    # IO18 = -0.00261*
+    fig = px.scatter(df, x="Elevacion", y="18O", color="Tipo",hover_name="Nombre",text="Nombre")
+    fig.update_traces(textposition='top center', textfont=dict(size=11))
+    fig.add_trace(go.Scatter(y=O18,x=deltaElev,mode='lines',name="Linea meteorica de la recarga superficial"))
+    fig.update_traces(textposition='top center', textfont=dict(size=11))
+    fig.update_layout(
+    yaxis_title='δ¹⁸O (‰)',
+    xaxis_title='Elevación (msnm)',
+    showlegend=True
+    )   
+    st.divider()
+    st.plotly_chart(fig)
+    st.divider()
 #----------------------------------------------------------------------------------------------
 elif st.session_state.page == 7:
     st.markdown("""
@@ -618,6 +656,7 @@ elif st.session_state.page == 7:
     2018 - 2024""")
     st.image("images/SeriesU.jpg")
 
+    
 
 # Añadir espacio extra
 st.markdown("<br><br><br>", unsafe_allow_html=True)  # Ajusta el número de <br> según necesites
