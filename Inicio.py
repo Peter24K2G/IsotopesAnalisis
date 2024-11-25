@@ -316,6 +316,8 @@ elif st.session_state.page == 3:
 
     st.divider()
 
+    df
+
     st.markdown("### Línea meteorica local")
     col1,col2,col3,col4 = st.columns([0.25,.25,.25,.25])
     with col1:
