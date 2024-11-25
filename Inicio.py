@@ -322,6 +322,7 @@ elif st.session_state.page == 3:
     col1,col2,col3,col4 = st.columns([0.25,.25,.25,.25])
     with col1:
         Filtro = st.selectbox("Seleccione la categoria para filtrar",options=["Tipo","Nombre","Fecha"])
+        Filtro
     with col2:
         if df_selection == "SIAMS-UNAL" and Filtro=="Tipo":
             selected_points1 = st.multiselect(
