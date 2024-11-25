@@ -330,12 +330,14 @@ elif st.session_state.page == 3:
                 options=df[Filtro].unique(),
                 default=["Lluvia"],
                 format_func=lambda x: f"{x}",
+                key="multiselect1"
             )
         else:
             selected_points1 = st.multiselect(
                 "Seleccione puntos para el grupo 1",
                 options=df[Filtro].unique(),
                 format_func=lambda x: f"{x}",
+                key="multiselect2"
             )
 
     with col3:
@@ -345,12 +347,14 @@ elif st.session_state.page == 3:
                 options=df[Filtro].unique(),
                 default=["Laguna"],
                 format_func=lambda x: f"{x}",
+                key="multiselect3"
             )
         else:
             selected_points2 = st.multiselect(
                 "Seleccione puntos para el grupo 1",
                 options=df[Filtro].unique(),
                 format_func=lambda x: f"{x}",
+                key="multiselect4"
             )
     with col4:
         if df_selection == "SIAMS-UNAL" and Filtro=="Tipo":
@@ -359,12 +363,14 @@ elif st.session_state.page == 3:
                 options=df[Filtro].unique(),
                 default=["Humedal "],
                 format_func=lambda x: f"{x}",
+                key="multiselect5"
             )
         else:
             selected_points3 = st.multiselect(
                 "Seleccione puntos para el grupo 1",
                 options=df[Filtro].unique(),
                 format_func=lambda x: f"{x}",
+                key="multiselect6"
             )
 
     if selected_points1:
