@@ -143,13 +143,13 @@ elif st.session_state.page == 2:
                 data = df.dropna(subset=['2H'])
                 st.session_state.df = df  # Asignar df a session_state
             else:
-                st.session_state.df = df  # Asignar df a session_state si se ingresan datos manualmente
+                st.session_state.df = writed_df  # Asignar df a session_state si se ingresan datos manualmente
             if uploaded_df is not None:
                 st.success("Archivo cargado correctamente")
             else:
                 st.error("No has subido ningún archivo aún")
 
-
+        df = st.session_state.df
     elif df_selection == "SIAMS-UNAL":
         df = pd.read_csv("BDIsotopos.csv",sep=",") 
         st.session_state.df = df  # Asignar df a session_state
